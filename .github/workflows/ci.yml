@@ -16,35 +16,51 @@ env:
   REPO_API: api-gateway
   REPO_CLIENT: client-service
   REPO_ACCOUNT: account-service
-jobs:
 
+jobs:
   build:
     name: Build and Push Images to DockerHub
     runs-on: ubuntu-latest
     steps:
-      # Checkout code (à compléter)
+      - name: Effectuer le checkout du code
+        uses: actions/checkout@v4
+      - name: Installer Java 
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: se connecter à DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # Installer Java (à compléter)
+      - name: Build and Push API Gateway
+        working-directory: ds-api-gateway
+        run: |
+          mvn clean package -DskipTests
+          docker build -t ${{ env.DOCKERHUB_USERNAME }}/${{ env.REPO_API }}:latest .
+          docker push ${{ env.DOCKERHUB_USERNAME }}/${{ env.REPO_API }}:latest
 
-      # Se connecter à DockerHub (à compléter)
+      - name: Build and Push Client Service
+        working-directory: ds-client-service
+        run: |
+          mvn clean package -DskipTests
+          docker build -t ${{ env.DOCKERHUB_USERNAME }}/${{ env.REPO_CLIENT }}:latest .
+          docker push ${{ env.DOCKERHUB_USERNAME }}/${{ env.REPO_CLIENT }}:latest
 
-      # Build API Gateway (à compléter)
-      # working-directory: ds-api-gateway
-      # run: |
-
-      # Build Client Service (à compléter)
-      # working-directory: ds-client-service
-      # run: |
-
-      # Build Account Service (à compléter)
-      # working-directory: ds-account-service
-      # run: |
+      - name: Build and Push Account Service
+        working-directory: ds-account-service
+        run: |
+          mvn clean package -DskipTests
+          docker build -t ${{ env.DOCKERHUB_USERNAME }}/${{ env.REPO_ACCOUNT }}:latest .
+          docker push ${{ env.DOCKERHUB_USERNAME }}/${{ env.REPO_ACCOUNT }}:latest
 
   deploy:
+    needs: build
     name: Deploy All Services
     runs-on: ubuntu-latest
-    # définir la dépendance avec le job build
     steps:
       - name: Simulate deployment
         run: |
-          # Ajouter les messages nécessaires
+            echo "Simulating deployment of all services"
