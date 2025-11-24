@@ -7,7 +7,7 @@ on:
   # Déclenchement sur Pull Request vers main
   pull_request:
     branches: [ main ]
-    types: [ opened, synchronize ]
+    types: [ opened, edited ]
 
 env:
   # Secrets DockerHub
